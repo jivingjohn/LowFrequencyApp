@@ -4,7 +4,9 @@ block content
   h1= title + ' ' + results.class.class
 
   p Click on a word to see the sentences that contain it
-
+  
+  button(type='button' class='btn btn-info  btn-md btn-toggle-no-match' ) Hide (0) matches
+  
   ul
     each word_match in results.word_matches
       li(class='word')

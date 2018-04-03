@@ -10,6 +10,15 @@ function click_on_word() {
   });
 }
 
+function hide_no_matches() {
+  $(document).on('click', '.btn-toggle-no-match', function() {
+    $('li:contains("(0)")').each(function() {
+      $(this).toggle();
+    });
+  });
+}
+
 $(document).ready( function() {
   click_on_word();
+  hide_no_matches();
 });
