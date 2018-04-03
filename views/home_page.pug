@@ -1,0 +1,25 @@
+extends layout
+
+block content
+  h1= title
+  p Start by entering something to search for
+
+  form(method='POST' action='/lowfrequencyapp/search')
+    div.form-group
+      label(for='search_terms') Search Wikipedia:
+      input#search_terms.form-control(type='text', placeholder='Enter some search terms' name='search_terms' required='true' value='' )
+
+    button.btn.btn-primary(type='submit') Submit
+  hr
+  h3 What's going on right now
+
+  if errors
+    ul
+      for error in errors
+        li!= error.msg
+  else
+    p The LowFrequencyApp is currently storing:
+
+    ul
+      li #[strong Classes:] !{data.class_count}
+      li #[strong Words:] !{data.word_count}

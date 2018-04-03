@@ -1,0 +1,22 @@
+extends layout
+
+block content
+  h1= title + ' ' + results.class.class
+
+  p Click on a word to see the sentences that contain it
+
+  ul
+    each word_match in results.word_matches
+      li(class='word')
+        p <b>#{ word_match.word.word }</b> <i>(#{ word_match.number_matches})</i>
+        ul(style='display:none;')
+          each word in word_match.matches
+            li
+              p #{ word.sentence }
+          else
+            li
+              There are no matches for this word.
+    else
+      li There are no matches for this class.
+
+  script(src='/public/javascripts/site.js')

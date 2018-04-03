@@ -1,0 +1,12 @@
+extends layout
+
+block content
+  h1= title
+
+  ul
+    each _class in class_list
+      li
+        a(href=_class.url) #{_class.class}
+
+    else
+      li There are no classes.

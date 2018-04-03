@@ -1,0 +1,33 @@
+extends layout
+
+block content
+  h1= title
+  p Select an Article to use
+  p Then select a class of word to find sentences for
+
+  form(method='POST' action='/lowfrequencyapp/search/get_frequency')
+    div.form-group
+      label(for='displaysearchterms') You searched for:
+      input#displaysearchterms.form-control(type='text', name='displaysearchterms' required='true' value=search_terms disabled=1 )
+      input#search_terms.form-control(type='hidden', name='search_terms' required='true' value=search_terms)
+    div.form-group
+      label(for='selected_result') Available Wikipedia Article Titles:
+      select#selected_result.form-control(type='select', placeholder='Select an article' name='selected_result' required='true' )
+        for _result in search_results
+          if (selected_result)
+            option(value=_result.pageid selected=(_result.pageid.toString()==selected_result.title ? 'selected' : false) ) #{_result.title}
+          else
+            option(value=_result.pageid) #{_result.title}
+    div.form-group
+      label(for='selected_class') Class:
+      select#selected_class.form-control(type='select', placeholder='Select class' name='selected_class' required='true' )
+        for _class in classes
+          option(value=_class._id) #{_class.class}
+
+    button.btn.btn-primary(type='submit') Submit
+
+  if errors
+    h1 Errors :(
+    ul
+      for error in errors
+        li!= error.msg

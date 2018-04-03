@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  h1= title
+
+  ul
+    each _word in word_list
+      li
+        a(href=_word.url) #{_word.word}
+        | (#{_word.class.class})
+
+    else
+      li There are no words.

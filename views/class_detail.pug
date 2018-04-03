@@ -1,0 +1,18 @@
+extends layout
+
+block content
+
+  h1 Class: #{detail.class}
+
+  div(style='margin-left:20px;margin-top:20px')
+
+    h4 Words
+
+    ul
+    each word in class_words
+      li
+        a(href=word.url) #{word.word}
+        |  #{word.frequency}
+
+    else
+      p This class has no words
