@@ -81,49 +81,59 @@ exports.search = [
 exports.get_frequency = [
   // Validate that the search_terms field is not empty.
   body('selected_result', 'You must select an article').isLength({ min: 1 }).trim(),
-  body('selected_class', 'You must select a class').isLength({ min: 1 }).trim(),
+  // body('selected_class', 'You must select a class').isLength({ min: 1 }).trim(),
+
+  // could probably check either selected_class or own_words is populated
+
   // Sanitize (trim and escape) the name field.
   sanitizeBody('selected_result').trim(),
   sanitizeBody('selected_class').trim(),
 
   // Process request after validation and sanitization.
   (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
 
-      // Extract the validation errors from a request.
-      const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        // There are errors. Render the form again with sanitized values/error messages.
+        async.parallel({
+          class_count: function(callback) {
+              Class.count({}, callback); // Pass an empty object as match condition to find all documents of this collection
+          },
+          word_count: function(callback) {
+              Word.count({}, callback);
+          },
+        }, function(err, results) {
+          res.render('home_page', { title: 'Low Frequency App', errors: errors.array(), classes: results.classes, data: results });
+        });
+    return;
+    }
+    else {
+      // req.body.search_result
+      var selected_result = req.body.selected_result; // id of wiki article
+      var selected_class = req.body.selected_class; // id of class we want
+      var own_words = req.body.own_words;
 
-      if (!errors.isEmpty()) {
-          // There are errors. Render the form again with sanitized values/error messages.
-          async.parallel({
-            class_count: function(callback) {
-                Class.count({}, callback); // Pass an empty object as match condition to find all documents of this collection
-            },
-            word_count: function(callback) {
-                Word.count({}, callback);
-            },
-          }, function(err, results) {
-            res.render('home_page', { title: 'Low Frequency App', errors: errors.array(), classes: results.classes, data: results });
-          });
-      return;
-      }
-      else {
-        // req.body.search_result
-        var selected_result = req.body.selected_result; // id of wiki article
-        var selected_class = req.body.selected_class; // id of class we want
+      var wikiPage = 'https://en.wikipedia.org/w/api.php?format=json&utf8=&action=query&prop=revisions&rvprop=content&pageids=' + selected_result;
 
-        var wikiPage = 'https://en.wikipedia.org/w/api.php?format=json&utf8=&action=query&prop=revisions&rvprop=content&pageids=' + selected_result;
+      // Wikipedia search
+      var client = request.createClient(wikiPage);
+      client.get('',function(err, result, body) {
+        // format of body is now
+        // body body.query.pages[selected_result].revisions[0]['*']
 
-        // Wikipedia search
-        var client = request.createClient(wikiPage);
-        client.get('',function(err, result, body) {
-          // format of body is now
-          // body body.query.pages[selected_result].revisions[0]['*']
+        // Convert to plaintext
+        var plaintext = wtf.plaintext(body.query.pages[selected_result].revisions[0]['*']);
+        // Get sentences from plaintext
+        var sentences = plaintext.match( /[^\.!\?]+[\.!\?]+/g );
 
-          // Convert to plaintext
-          var plaintext = wtf.plaintext(body.query.pages[selected_result].revisions[0]['*']);
-          // Get sentences from plaintext
-          var sentences = plaintext.match( /[^\.!\?]+[\.!\?]+/g );
 
+        if (own_words) {
+          // Don't need to find classes etc as we have words to use
+          var words = own_words.split(' ');
+
+          res.render('matches', { title: 'Search results for', 'results': match_own_words(words,sentences) });
+        } else {
           // Get the words from our catgory into an array
 
           // Pull out sentences that contain words from our category
@@ -141,33 +151,64 @@ exports.get_frequency = [
 
             // create new array with json storing:
             // {word: word, matches: [{sentence: sentence},...,{sentence: sentence}]}
-            var matches = [];
 
-            words.forEach(function(word) {
-              var word_matches = [];
-              sentences.forEach(function(sentence){
-                if (sentence.includes(word.word)) {
-                    word_matches.push({ 'sentence': sentence });
-                  }
-              });
-              matches.push({ 'word': word, 'number_matches': word_matches.length, 'matches': word_matches });
-            });
-            // Create final results including the class
-            // {class:class,word_matches: [{word: matches},...,{word: matches}]}
-            var results = {'class': _class, 'word_matches': matches };
+            res.render('matches', { title: 'Search results for', 'results': display_matches(_class,words,sentences) });
 
-            res.render('matches', { title: 'Search results for', 'results': results });
+            // var matches = [];
+            //
+            // words.forEach(function(word) {
+            //   var word_matches = [];
+            //   sentences.forEach(function(sentence){
+            //     if (sentence.includes(word.word)) {
+            //         word_matches.push({ 'sentence': sentence });
+            //       }
+            //   });
+            //   matches.push({ 'word': word, 'number_matches': word_matches.length, 'matches': word_matches });
+            // });
+            // // Create final results including the class
+            // // {class:class,word_matches: [{word: matches},...,{word: matches}]}
+            // var results = {'class': _class, 'word_matches': matches };
+            //
+            // res.render('matches', { title: 'Search results for', 'results': results });
           });
-        });
-      }
+        }
+      });
+    }
   }
 ];
 
+function match_own_words(words,sentences) {
+  var matches = [];
 
-// function match(word,sentence,cb) {
-//   // return the sentence if it contains the word
-//   if (sentence.includes(word)) {
-//     cb(null, sentence);
-//   }
-//   cb(null,null);
-// }
+  words.forEach(function(word) {
+    var word_matches = [];
+    sentences.forEach(function(sentence){
+      if (sentence.includes(word)) {
+        word_matches.push({ 'sentence': sentence });
+      }
+    });
+    matches.push({ 'word' : { 'word' : word }, 'number_matches': word_matches.length, 'matches': word_matches });
+  });
+  // Create final results including the class
+  // {class:class,word_matches: [{word: matches},...,{word: matches}]}
+  return {'class': { 'class': 'own words' }, 'word_matches': matches };
+}
+
+function display_matches(_class,words,sentences) {
+  // create new array with json storing:
+  // {word: word, matches: [{sentence: sentence},...,{sentence: sentence}]}
+  var matches = [];
+
+  words.forEach(function(word) {
+    var word_matches = [];
+    sentences.forEach(function(sentence){
+      if (sentence.includes(word.word)) {
+          word_matches.push({ 'sentence': sentence });
+        }
+    });
+    matches.push({ 'word': word, 'number_matches': word_matches.length, 'matches': word_matches });
+  });
+  // Create final results including the class
+  // {class:class,word_matches: [{word: matches},...,{word: matches}]}
+  return {'class': _class, 'word_matches': matches };
+}

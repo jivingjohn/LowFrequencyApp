@@ -18,12 +18,17 @@ block content
             option(value=_result.pageid selected=(_result.pageid.toString()==selected_result.title ? 'selected' : false) ) #{_result.title}
           else
             option(value=_result.pageid) #{_result.title}
+    h3 Select a class of words to search by
     div.form-group
       label(for='selected_class') Class:
-      select#selected_class.form-control(type='select', placeholder='Select class' name='selected_class' required='true' )
+      select#selected_class.form-control(type='select', placeholder='Select class' name='selected_class' )
+        option -Select class-
         for _class in classes
           option(value=_class._id) #{_class.class}
-
+    h3 or
+    div.form-group
+        label(for='own_words') Enter your own words:
+        input#own_words.form-control(type='text' name='own_words')
     button.btn.btn-primary(type='submit') Submit
 
   if errors
@@ -31,3 +36,5 @@ block content
     ul
       for error in errors
         li!= error.msg
+  
+  hr

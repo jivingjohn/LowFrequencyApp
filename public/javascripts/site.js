@@ -12,6 +12,18 @@ function click_on_word() {
 
 function hide_no_matches() {
   $(document).on('click', '.btn-toggle-no-match', function() {
+    var html = $(this).html();
+    // change the text on the button
+
+    var show = html.replace('Hide','Show');
+    var hide = html.replace('Show','Hide');
+
+    if (show == html) {
+      $(this).html(hide);
+    } else {
+      $(this).html(show);
+    }
+
     $('li:contains("(0)")').each(function() {
       $(this).toggle();
     });
