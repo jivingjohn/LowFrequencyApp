@@ -23,8 +23,8 @@ To use:
 Basically, you give it some search criteria for a title 
 (otherwise you need to know the actual title to get a Wikipedia article back)
 It will return titles that match using Wikipedia search api
-You then select one and choose a category of Frequency ranked words
-It'll pull out sentences that contain the word and categorise them
+It then enumerates how many of each word exist within that article
+And produces a list of sentences containing each word
 
 To install:
 
