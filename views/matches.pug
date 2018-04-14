@@ -1,11 +1,19 @@
 extends layout
 
 block content
-  h1= title + ' ' + results.class.class
-
-  p Click on a word to see the sentences that contain it
+  h2= title
+  h1(style='text-align: center;')= subtitle
   
-  button(type='button' class='btn btn-info  btn-md btn-toggle-no-match' ) Hide (0) matches
+  div.form-group
+    label(for='refine_results') Search within the results:
+    input#refine_results.form-control(type='text', placeholder='Start typing...' name='refine_results' value='' )
+  
+  button.btn.btn-primary(type='button', id='btn_refine') Refine
+  button.btn.btn-default(type='button', id='btn_refine_clear') Clear
+  
+  hr
+    
+  p Click on a word to see the sentences that contain it
   
   ul
     each word_match in results.word_matches
