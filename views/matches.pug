@@ -27,6 +27,9 @@ block content
             li
               There are no matches for this word.
     else
-      li There are no matches for this class.
-
-  script(src='/public/javascripts/site.js')
+      li There are no matches.
+    
+  ul
+    each image in images
+      li(class='image')
+        img.className#IdName(src=image  alt=image)

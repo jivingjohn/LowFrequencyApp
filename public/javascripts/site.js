@@ -3,13 +3,11 @@
 function refine_search() {
   //refine_search button
   $(document).on('click','#btn_refine', function() {
-    // Hide li that do not contain our word
     var refine_results = $('#refine_results').val();
 
     if (refine_results.length) {
-      //$('.word').hide();
       $('li.word').children('p').each(function() {
-        if ($(this).text().includes(refine_results)) {
+        if ($(this).text().includes(refine_results.toLowerCase())) {
           // li heading contains our result
           $(this).closest('li.word').show();
         } else {
